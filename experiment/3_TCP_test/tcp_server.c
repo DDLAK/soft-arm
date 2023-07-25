@@ -45,14 +45,22 @@ int main (int argc, char* argv[])
 	
 	// Wait for accepting a connection.
 	addr_len = sizeof(struct sockaddr);
+	int accept_return;
 	while (1)
 	{
-		if (accept(client_socket, (struct sockaddr *)&client_addr,
-				&addr_len) != -1)
+		accept_return = accept(server_socket, (struct sockaddr *)&client_addr,
+				&addr_len);
+		printf("%d\n", accept_return);
+		if (accept_return != -1)
 		{
+			printf("Successful\n");
 			printf("Successful connect to: %s\n",
 					inet_ntoa(client_addr.sin_addr));
 
+		}
+		else
+		{
+			perror("Accept");
 		}
 	}
 
