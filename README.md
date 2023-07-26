@@ -106,7 +106,7 @@ Passive wire:
              The BOM of the Dynamixel Hat.
          </div>
      </center>
-
+     
      
 
 ## Set-up Steps Before Experiments
@@ -158,6 +158,16 @@ sudo pip3 install --upgrade adafruit-python-shell
 wget https://raw.githubusercontent.com/adafruit/Raspberry-Pi-Installer-Scripts/master/raspi-blinka.py
 sudo python3 raspi-binka.py
 ```
+
+## Experiments
+
+### 1. UART
+
+### 2. I2C
+
+### 3. TCP
+
+
 
 ## Revisions
 
