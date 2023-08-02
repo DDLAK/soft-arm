@@ -34,44 +34,61 @@
 #define E_ANGLE_LIMIT 1
 #define E_INPUT_VOLTAGE 0
 
-struct instruction_packet
-{
-	unsigned char start[2];
-	unsigned char id;
-	unsigned char length;
-	unsigned char instruction;
-	unsigned char *parameters;
-	unsigned char checksum;
-};
+// The meaning of each position shown in the packet.
+#define PCK_START1 0
+#define PCK_START2 1
+#define PCK_ID 2
+#define PCK_LENGTH 3
+#define PCK_INSTR_ERROR 4
 
-struct status_packet
+int write_packet(int fd, char id, char length, char instruction, char p1, char p2, char p3)
 {
-	unsigned char start[2];
-	unsigned char id;
-	unsigned char length;
-	unsigned char error;
-	unsigned char *parameters;
-	unsigned char checksum;
-};
 
-int write_packet(int fd, struct instruction_packet *packet)
-{
+	char ch;
+	int ret = 0;
+
+	// Set the PIN_CTRL in order to write.
+	bcm2835_gpio_write(PIN_CTRL, HIGH);
 	
-}
+	ch = START_FLAG;
+	ret += write(fd, &ch, 1);
+	ch = START_FLAG;
+	ret += write(fd, &ch, 1);
+	ch = id;
+	ret += write(fd, &ch, 1);
+	ch = length;
+	ret += write(fd, &ch, 1);
+	ch = instruction;
+	ret += write(fd, &ch, 1);
+	ch = p1;
+	ret += write(fd, &ch, 1);
+	ch = p2;
+	ret += write(fd, &ch, 1);
+	ch = p3;
+	ret += write(fd, &ch, 1);
+	ch = ~(id+length+instruction+p1+p2+p3);
+	ret += write(fd, &ch, 1);
+	
+	// TODO: 不定长参数
+		
+	if (ret != length+4)
+	{
+		return -1;
+	}
+	
+	return 0;
+}	
 
 int main(int argc, char *argv[])
 {
 	int serial_fd;
 	struct termios serial_options;
-	struct instruction_packet i_packet;
-	struct status_packet s_packet;
-
-	int ret;
-	char ch;
+	char *instr_packet, *status_packet;   
 
 	if (!bcm2835_init())
 	{
-		return -1;
+		printf("Fail to init bcm2835");
+		exit(EXIT_FAILURE);
 	}
 	bcm2835_gpio_fsel(PIN_CTRL, BCM2835_GPIO_FSEL_OUTP);
 
@@ -134,156 +151,11 @@ int main(int argc, char *argv[])
 	}
 
 	
-	// Test.
-//	while(1)
-//	{
-//		scanf("%c", &ch);
-//
-	//	bcm2835_gpio_write(PIN_CTRL, HIGH);
-	//	ret = write(serial_fd, &ch, 1);
-	//	printf("write [%c], ret is %d \n", ch, ret);
-	//
-	//	bcm2835_delay(200);
-	//	bcm2835_gpio_write(PIN_CTRL, LOW);
-	//	ret = read(serial_fd, &ch, 1);
-	//	if (ret < 0)
-	//	{
-	//		printf("read fail, ret is %d\n", ret);
-	//	}
-	//	else
-	///	{
-	//		printf("recv a char: [0x%02x][%c]\n", ch, ch);	
-	//	}	
-	//}
-
-	// Write 'PING' instruction to ax12.
-	bcm2835_gpio_write(PIN_CTRL, HIGH);
-	i_packet.start[0] = START_FLAG;
-	i_packet.start[1] = START_FLAG;
-	i_packet.id = 0x04;
-	i_packet.length = 0x05;
-	i_packet.instruction = I_WRITE;
-	i_packet.parameters = (char *)malloc(3*sizeof(char));
-	if (NULL == i_packet.parameters)
-	{
-		perror("Malloc");
-		exit(EXIT_FAILURE);
-	}
-	i_packet.parameters[0] = 0x1E;
-	i_packet.parameters[1] = 0x00;
-	i_packet.parameters[2] = 0x00;
-	i_packet.checksum = ~(i_packet.id + i_packet.length + i_packet.instruction +
-			i_packet.parameters[0] + i_packet.parameters[1] + i_packet.parameters[2]);
-
-	printf("%x %x %x ", i_packet.parameters[0], i_packet.parameters[1], i_packet.parameters[2]);
-	printf("%x", i_packet.checksum);
-	
-	int fd = open("./output", O_CREAT | O_RDWR);
-	write(fd, &i_packet, sizeof(i_packet));
-
-	if (-1 == write(serial_fd, &i_packet, sizeof(i_packet)))
-	{
-		perror("Fail to write i_packet");
-		exit(EXIT_FAILURE);
-	}
-
-	bcm2835_delay(500);
-
-	i_packet.parameters[1] = 0x96;
-	i_packet.checksum = ~(i_packet.id + i_packet.length + i_packet.instruction +
-			i_packet.parameters[0] + i_packet.parameters[1] + i_packet.parameters[2]);
-
-	if (-1 == write(serial_fd, &i_packet, sizeof(i_packet)))
-	{
-		perror("Fail to write i_packet");
-		exit(EXIT_FAILURE);
-	}
-
-//	bcm2835_gpio_write(PIN_CTRL, HIGH);
-//	ch = 0xFF;
-//	write(serial_fd, &ch, 1);
-//	ch = 0xFF;
-//	write(serial_fd, &ch, 1);
-//	ch = 0x04;
-//	write(serial_fd, &ch, 1);
-//	ch = 0x05;
-//	write(serial_fd, &ch, 1);
-//	ch = 0x03;
-//	write(serial_fd, &ch, 1);
-//	ch = 0x1E;
-//	write(serial_fd, &ch, 1);
-//	ch = 0x00;
-//	write(serial_fd, &ch, 1);
-//	ch = 0x00;
-//	write(serial_fd, &ch, 1);
-//	ch = 0xD5;
-//	write(serial_fd, &ch, 1);
-//	bcm2835_delay(500);
-		
-
-//	ch = 0xFF;
-//	write(serial_fd, &ch, 1);
-//	ch = 0xFF;
-//	write(serial_fd, &ch, 1);
-//	ch = 0x04;
-//	write(serial_fd, &ch, 1);
-//	ch = 0x05;
-//	write(serial_fd, &ch, 1);
-//	ch = 0x03;
-//	write(serial_fd, &ch, 1);
-//	ch = 0x1E;
-//	write(serial_fd, &ch, 1);
-//	ch = 0x96;
-//	write(serial_fd, &ch, 1);
-//	ch = 0x00;
-//	write(serial_fd, &ch, 1);
-//	ch = 0x3F;
-//	write(serial_fd, &ch, 1);
-//	bcm2835_delay(500);
-
-//	printf("done write\n");
-
-//	char buffer[9];
-///
-//	bcm2835_gpio_write(PIN_CTRL, HIGH);
-//	buffer[0] = 0xFF;
-//	buffer[1] = 0xFF;
-//	buffer[2] = 0x04;
-//	buffer[3] = 0x05;
-//	buffer[4] = 0x03;
-//	buffer[5] = 0x1E;
-//	buffer[6] = 0x96;
-//	buffer[7] = 0x00;
-//	buffer[8] = 0x3F;
-//	printf("return write %d\n", write(serial_fd, &buffer, sizeof(buffer)));
-//	memset(&buffer, 0, 11);
-//	
-//	bcm2835_delay(500);
-//
-//	bcm2835_gpio_write(PIN_CTRL, LOW);
-//	printf("return read %d\n", read(serial_fd, &buffer, 3));
-//	printf("read data%x\n", buffer[0]);
-//	printf("read data %x\n", buffer[1]);
-//	printf("read data %x\n", buffer[2]);
-
-	// Read from ax12.
-//	s_packet.parameters = (char *)malloc(3*sizeof(char));
-//	if (NULL == s_packet.parameters)
-//	{
-//		perror("Malloc");
-//		exit(EXIT_FAILURE);
-//	}
-//	
-//	if (-1 == read(serial_fd, &s_packet, sizeof(s_packet)))
-//	{
-//		perror("Fail to read s_packet");
-//		exit(EXIT_FAILURE);
-//	}
-//
-//	printf("id: %x, length: %x, error: %x\n", s_packet.id, s_packet.length, s_packet.error);
-//	printf("parameters: 1. %x, 2. %x, 3. %x\n", s_packet.parameters[0], s_packet.parameters[1],
-//		       	s_packet.parameters[2]);
-	
+	// Write instruction to ax12.
+	write_packet(serial_fd, 0x01, 0x05, I_WRITE, 0x1E, 0x00, 0x00);
+	write_packet(serial_fd, 0x02, 0x05, I_WRITE, 0x1E, 0x00, 0x00);
+	write_packet(serial_fd, 0x03, 0x05, I_WRITE, 0x1E, 0x00, 0x00);
+	write_packet(serial_fd, 0x04, 0x05, I_WRITE, 0x1E, 0x00, 0x00);
 
 	// Close the file.
 	if (-1 == close(serial_fd))
