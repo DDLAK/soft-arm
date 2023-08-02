@@ -5,12 +5,13 @@
 #include <fcntl.h>
 #include <string.h>
 #include <linux/i2c.h>
-#include <linux/i2c-dev.h> 
- 
-//#define CHIP_ADDR 0x20
-#define I2C_DEV "/dev/i2c-0"//i2c_dev为i2c　adapter创建的别名
-//读操作先发Slaveaddr_W+Regaddr_H+Regaddr_L 3个字节来告诉设备操作器件及两个byte参数
-//然后发送Slaveaddr_R读数据
+#include <linux/i2c-dev.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+
+//#define CHIP_ADDR 0x68
+#define I2C_DEV "/dev/i2c-1"
+
 static int iic_read(int fd, char buff[], int addr, int count)
 {
     int res;
@@ -22,7 +23,7 @@ static int iic_read(int fd, char buff[], int addr, int count)
         printf("read %d byte at 0x%x/n", res, addr);
         return res;
 }
-//在写之前，在数据前加两个byte的参数，根据需要解析
+
 static int iic_write(int fd, char buff[], int addr, int count)
 {
         int res;
@@ -48,8 +49,8 @@ int main(void){
     printf("please input slave addr:");
     scanf("%x",&slaveaddr);
     printf("input slave addr is:%x/n",slaveaddr);
-           printf("please input reg addr:");
-    scanf("%x",?addr);
+    printf("please input reg addr:");
+    scanf("%x", &regaddr);
     printf("input slave addr is:%x/n",regaddr);
     res = ioctl(fd,I2C_TENBIT,0);   //not 10bit
            res = ioctl(fd,I2C_SLAVE,slaveaddr);    //设置I2C从设备地址[6:0]
