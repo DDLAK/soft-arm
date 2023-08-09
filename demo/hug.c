@@ -398,17 +398,19 @@ int main(int argc, char *argv[])
 //	write_packet(test_fd, 0x01, 0x05, I_WRITE, 0x1E, 0x96, 0x00);
 
 
-	// Write instruction to ax12.
+	// Write instruction to ax12
+	ax_move_speed(serial_fd, MOTOR_LB, 200);
+	ax_move_speed(serial_fd, MOTOR_RB, 200);
 	//ax_turn2angle(serial_fd, MOTOR_LF, 511);
 	//ax_turn2angle(serial_fd, MOTOR_RF, 511);
 	for (i = 0; i < 5; ++i)
 	{
-		ax_turn2angle(serial_fd, MOTOR_LB, 511);
-		ax_turn2angle(serial_fd, MOTOR_RB, 0);
-		bcm2835_delay(800);
-		ax_turn2angle(serial_fd, MOTOR_LB, 1023);
-		ax_turn2angle(serial_fd, MOTOR_RB, 511);
-		bcm2835_delay(800);
+		ax_turn2angle(serial_fd, MOTOR_LB, 0);
+		ax_turn2angle(serial_fd, MOTOR_RB, 1023);
+		bcm2835_delay(1000);
+		ax_turn2angle(serial_fd, MOTOR_LB, 866);
+		ax_turn2angle(serial_fd, MOTOR_RB, 255);
+		bcm2835_delay(1000);
 	}
 	ax_turn2angle(serial_fd, MOTOR_LB, 511);
 	ax_turn2angle(serial_fd, MOTOR_RB, 511);

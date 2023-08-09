@@ -401,21 +401,17 @@ int main(int argc, char *argv[])
 	// Write instruction to ax12.
 	//ax_turn2angle(serial_fd, MOTOR_LF, 511);
 	//ax_turn2angle(serial_fd, MOTOR_RF, 511);
-	for (i = 0; i < 5; ++i)
+	//ax_turn2angle(serial_fd, MOTOR_LB, 511);
+	ax_move_speed(serial_fd, MOTOR_RF, 300);
+	
+	for (i = 0; i < 5; ++i)		
 	{
-		ax_turn2angle(serial_fd, MOTOR_LB, 511);
-		ax_turn2angle(serial_fd, MOTOR_RB, 0);
-		bcm2835_delay(800);
-		ax_turn2angle(serial_fd, MOTOR_LB, 1023);
-		ax_turn2angle(serial_fd, MOTOR_RB, 511);
-		bcm2835_delay(800);
+		ax_turn2angle(serial_fd, MOTOR_RF, 688);
+		bcm2835_delay(500);
+		ax_turn2angle(serial_fd, MOTOR_RF, 1023);
+		bcm2835_delay(500);
 	}
-	ax_turn2angle(serial_fd, MOTOR_LB, 511);
-	ax_turn2angle(serial_fd, MOTOR_RB, 511);
-	//ax_move_speed(serial_fd, MOTOR_LB, 255);
-	//ax_turn2angle(serial_fd, MOTOR_LB, 688);
-	//bcm2835_delay(800);
-	//ax_turn2angle(serial_fd, MOTOR_LB, 1023);
+	ax_turn2angle(serial_fd, MOTOR_RF, 511);
 
 	// Close the file.
 	if (-1 == close(serial_fd))

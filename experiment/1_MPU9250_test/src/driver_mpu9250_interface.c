@@ -49,7 +49,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 
-#define IIC_ADAPTOR_NAME "/dev/i2c-1"
+#define IIC_ADAPTOR_NAME "/dev/i2c-0"
 
 static int i2c_fd;
 
