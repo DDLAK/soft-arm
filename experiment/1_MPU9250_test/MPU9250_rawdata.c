@@ -1,90 +1,63 @@
-#include <stdio.h>
+#include "driver_mpu9250_basic.h"
 #include <stdlib.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <string.h>
-#include <linux/i2c.h>
-#include <linux/i2c-dev.h>
-#include <unistd.h>
-#include <sys/ioctl.h>
 
-//#define CHIP_ADDR 0x68
-#define I2C_DEV "/dev/i2c-1"
-
-static int iic_read(int fd, char buff[], int addr, int count)
+int main()
 {
-    int res;
-    char sendbuffer1[2];
-    sendbuffer1[0]=addr>>8;
-    sendbuffer1[1]=addr;
-    write(fd,sendbuffer1,2);      
-        res=read(fd,buff,count);
-        printf("read %d byte at 0x%x/n", res, addr);
-        return res;
-}
+	int i = 0;
+	int times = 500;
 
-static int iic_write(int fd, char buff[], int addr, int count)
-{
-        int res;
-        int i,n;
-        static char sendbuffer[100];
-        memcpy(sendbuffer+2, buff, count);
-        sendbuffer[0]=addr>>8;
-    sendbuffer[1]=addr;
-        res=write(fd,sendbuffer,count+2);
-        printf("write %d byte at 0x%x/n", res, addr);
-}
-int main(void){
-    int fd;
-    int res;
-    char ch;
-    char buf[50];
-    int regaddr,i,slaveaddr;
-    fd = open(I2C_DEV, O_RDWR);// I2C_DEV /dev/i2c-0
-        if(fd < 0){
-                printf("####i2c test device open failed####/n");
-                return (-1);
-        }
-    printf("please input slave addr:");
-    scanf("%x",&slaveaddr);
-    printf("input slave addr is:%x/n",slaveaddr);
-    printf("please input reg addr:");
-    scanf("%x", &regaddr);
-    printf("input slave addr is:%x/n",regaddr);
-    res = ioctl(fd,I2C_TENBIT,0);   //not 10bit
-           res = ioctl(fd,I2C_SLAVE,slaveaddr);    //设置I2C从设备地址[6:0]
-        while((ch=getchar())!='0'){
-        switch(ch){
-            case '1':
-                printf("getch test success/n");
-                break;
-            case '2':
-                buf[0]=0xFF;
-                buf[1]=0xFF;
-                buf[2]=0xFF;
-                buf[3]=0xFF;
-                buf[4]=0xFF;
-                printf("read i2c test/n");
-                res=iic_read(fd,buf,regaddr,5);
-                printf("%d bytes read:",res);
-                for(i=0;i<res;i++){
-                    printf("%d ",buf[i]);
-                }
-                printf("/n");
-                break;
-            case '3':
-                buf[0]=0xAA;
-                buf[1]=0x55;
-                buf[2]=0xAA;
-                printf("write i2c test/n");
-                res=iic_write(fd,buf,regaddr,2);
-                printf("%d bytes write success/n");
-                break;
-            default:
-                printf("bad command/n");
-                break;
-        }
-    }
-    return 0;
-}
+	uint8_t res;
+	float g[3], dps[3], ut[3];
+	float degrees;
+
+	mpu9250_address_t addr;
+
+	// Initialize MPU9250.
+	addr = MPU9250_ADDRESS_AD0_LOW;
+	res = mpu9250_basic_init(MPU9250_INTERFACE_IIC, addr);
+	if (res != 0)
+	{
+		perror("Fail to init MPU9250 (MPU9250_basic_init)");
+		return -1;
+	}
+	
+	// Read accelerometer and gyroscope.
+	for (i = 0; i < times; ++i)
+	{
+		if (0 != mpu9250_basic_read(g, dps, ut)) 
+		{
+			(void)mpu9250_basic_deinit();
+			return -1;
+		}
+
+		if (0 != mpu9250_basic_read_temperature(&degrees))
+		{
+			(void)mpu9250_basic_deinit();
+			return -1;
+		}
+	
+		// Output the value.
+//		printf("mpu9250: acce x is %0.2fg.\n", g[0]);
+//		printf("mpu9250: acce y is %0.2fg.\n", g[1]);
+//		printf("mpu9250: acce z is %0.2fg.\n", g[2]);
+//		printf("mpu9250: gyro x is %0.2fdps.\n", dps[0]);
+//		printf("mpu9250: gyro y is %0.2fdps.\n", dps[1]);
+//		printf("mpu9250: gyro z is %0.2fdps.\n", dps[2]);
+//		printf("mpu9250: temperature is %0.2fC.\n", degrees);
+		
+		printf("%.4f  %.4f  %.4f\n", g[0], g[1], g[2]);
+		
+		mpu9250_interface_delay_ms(10);
+	}
+
+	// Deinit and finish.
+	(void)mpu9250_basic_deinit();
+
+	return 0;
+
+} // End of main.
+
