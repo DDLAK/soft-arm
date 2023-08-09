@@ -40,16 +40,14 @@ int main()
 			return -1;
 		}
 	
-		// Output the value.
-//		printf("mpu9250: acce x is %0.2fg.\n", g[0]);
-//		printf("mpu9250: acce y is %0.2fg.\n", g[1]);
-//		printf("mpu9250: acce z is %0.2fg.\n", g[2]);
-//		printf("mpu9250: gyro x is %0.2fdps.\n", dps[0]);
-//		printf("mpu9250: gyro y is %0.2fdps.\n", dps[1]);
-//		printf("mpu9250: gyro z is %0.2fdps.\n", dps[2]);
-//		printf("mpu9250: temperature is %0.2fC.\n", degrees);
-		
-		printf("%.4f  %.4f  %.4f\n", g[0], g[1], g[2]);
+		// Output the value
+		printf("mpu9250: acce x is %0.2fg.\n", g[0]);
+		printf("mpu9250: acce x is %0.2fg.\n", g[0]);
+		printf("mpu9250: acce z is %0.2fg.\n", g[2]);
+		printf("mpu9250: gyro x is %0.2fdps.\n", dps[0]);
+		printf("mpu9250: gyro y is %0.2fdps.\n", dps[1]);
+		printf("mpu9250: gyro z is %0.2fdps.\n", dps[2]);
+		printf("mpu9250: temperature is %0.2fC.\n", degrees);
 		
 		mpu9250_interface_delay_ms(10);
 	}
