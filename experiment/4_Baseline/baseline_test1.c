@@ -19,7 +19,7 @@ int main()
 	mpu9250_address_t addr;
 
 	// Open a csv file to store the data.
-	FILE *csv_fp = fopen("./data/test1.csv", "w+");
+	FILE *csv_fp = fopen("./data/test1_5.csv", "w+");
 	if (NULL == csv_fp)
 	{
 		perror("Fail to fopen csv_fd");

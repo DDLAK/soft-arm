@@ -402,7 +402,7 @@ int main(int argc, char *argv[])
 	//ax_turn2angle(serial_fd, MOTOR_LF, 511);
 	//ax_turn2angle(serial_fd, MOTOR_RF, 511);
 	//ax_turn2angle(serial_fd, MOTOR_LB, 511);
-	ax_move_speed(serial_fd, MOTOR_RF, 300);
+	ax_move_speed(serial_fd, MOTOR_RF, 200);
 	
 	for (i = 0; i < 5; ++i)		
 	{
