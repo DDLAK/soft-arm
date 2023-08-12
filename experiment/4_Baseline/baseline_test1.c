@@ -11,15 +11,15 @@
 int main()
 {
 	int i = 0;
-	int times = 6000;
+	int times = 3600;
 
 	uint8_t res;
 	float accel[3], gyro[3], magn[3];
 
 	mpu9250_address_t addr;
 
-	// Open a csv file to store the data.
-	FILE *csv_fp = fopen("./data/test1_5.csv", "w+");
+	// Open a csv file to store the data
+	FILE *csv_fp = fopen("./data/test1_1.csv", "w+");
 	if (NULL == csv_fp)
 	{
 		perror("Fail to fopen csv_fd");
@@ -62,7 +62,7 @@ int main()
 		fprintf(csv_fp, "%f,%f,%f,%f,%f,%f\n", 
 				accel[0], accel[1], accel[2], gyro[0], gyro[1], gyro[2]);
 		
-		mpu9250_interface_delay_ms(100);		
+		mpu9250_interface_delay_ms(1000);		
 	}
 
 	// Deinit and finish.

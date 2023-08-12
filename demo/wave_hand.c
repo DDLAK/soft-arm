@@ -406,10 +406,10 @@ int main(int argc, char *argv[])
 	
 	for (i = 0; i < 5; ++i)		
 	{
-		ax_turn2angle(serial_fd, MOTOR_RF, 688);
-		bcm2835_delay(500);
-		ax_turn2angle(serial_fd, MOTOR_RF, 1023);
-		bcm2835_delay(500);
+		ax_turn2angle(serial_fd, MOTOR_RF, 511);
+		bcm2835_delay(700);
+		ax_turn2angle(serial_fd, MOTOR_RF, 200);
+		bcm2835_delay(700);
 	}
 	ax_turn2angle(serial_fd, MOTOR_RF, 511);
 

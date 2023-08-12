@@ -319,7 +319,7 @@ int ax_move_speed(int fd, uint8_t id, int speed)
 
 int main(int argc, char *argv[])
 {
-	int i;
+	int i, j;
 	int serial_fd;
 	struct termios serial_options;
 
@@ -399,24 +399,29 @@ int main(int argc, char *argv[])
 
 
 	// Write instruction to ax12.
-	ax_move_speed(serial_fd, MOTOR_LB, 200);
-	ax_move_speed(serial_fd, MOTOR_RB, 200);
+	ax_move_speed(serial_fd, MOTOR_RB, 100);
+	ax_move_speed(serial_fd, MOTOR_RF, 100);
 
-	for (i = 0; i < 5; ++i)
+	ax_turn2angle(serial_fd, MOTOR_RB, 0);
+	ax_turn2angle(serial_fd, MOTOR_RF, 511);
+	bcm2835_delay(3000);
+
+	for (i = 511; i >= 0; i=i-20)
 	{
-		ax_turn2angle(serial_fd, MOTOR_LB, 255);
-		ax_turn2angle(serial_fd, MOTOR_RB, 768);
-		bcm2835_delay(800);
-		ax_turn2angle(serial_fd, MOTOR_LB, 0);
-		ax_turn2angle(serial_fd, MOTOR_RB, 1023);
-		bcm2835_delay(800);
+		ax_turn2angle(serial_fd, MOTOR_RF, i);
+		ax_turn2angle(serial_fd, MOTOR_RB, 0);
+		bcm2835_delay(7000);
+		for (j = 0; j <= 1023; ++j)
+		{
+			ax_turn2angle(serial_fd, MOTOR_RB, j);
+			bcm2835_delay(10);
+		}
+		printf("i=%d, j=%d\n", i, j);
 	}
-	ax_turn2angle(serial_fd, MOTOR_LB, 511);
-	ax_turn2angle(serial_fd, MOTOR_RB, 511);
-	//ax_move_speed(serial_fd, MOTOR_LB, 255);
-	//ax_turn2angle(serial_fd, MOTOR_LB, 688);
-	//bcm2835_delay(800);
-	//ax_turn2angle(serial_fd, MOTOR_LB, 1023);
+	//ax_turn2angle(serial_fd, MOTOR_LB, 511);
+	//ax_turn2angle(serial_fd, MOTOR_RB, 1023);
+	//ax_turn2angle(serial_fd, MOTOR_LF, 511);
+	//ax_turn2angle(serial_fd, MOTOR_RF, 0);
 
 	// Close the file.
 	if (-1 == close(serial_fd))
@@ -424,6 +429,7 @@ int main(int argc, char *argv[])
 		perror("Close");
 		exit(EXIT_FAILURE);
 	}
+	bcm2835_close();
 
 	return 0;
 }
