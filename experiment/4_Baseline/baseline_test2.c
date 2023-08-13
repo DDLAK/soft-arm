@@ -8,10 +8,6 @@
 #define I2C_FLAG_RIGHT 0
 #define I2C_FLAG_LEFT 1
 
-// Converted position coordinates.
-float right_position[3] = {0.0};
-float left_position[3] = {0.0};
-
 int main()
 {
 	int i = 0;
@@ -21,14 +17,6 @@ int main()
 	float accel[3], gyro[3], magn[3];
 
 	mpu9250_address_t addr;
-
-	// Open a csv file to store the data.
-	FILE *csv_fp = fopen("./data/test2.csv", "w+");
-	if (NULL == csv_fp)
-	{
-		perror("Fail to fopen csv_fd");
-		exit(EXIT_FAILURE);
-	}	
 
 	// Initialize MPU9250.
 	addr = MPU9250_ADDRESS_AD0_LOW;
@@ -53,8 +41,8 @@ int main()
 			(void)mpu9250_basic_deinit();
 			return -1;
 		}
-
-		mpu9250_interface_delay_ms(100);		
+		
+		mpu9250_interface_delay_ms(10);		
 	}
 
 	// Deinit and finish.
