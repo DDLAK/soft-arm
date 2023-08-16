@@ -1,4 +1,5 @@
 #include "driver_mpu9250_basic.h"
+#include "driver_ax12.h"
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -8,66 +9,46 @@
 #define I2C_FLAG_RIGHT 0
 #define I2C_FLAG_LEFT 1
 
+// MOTOR ID MACROS, 
+// L/R means left/right, F/B means forward/backward.
+#define MOTOR_LB 0x01
+#define MOTOR_LF 0x02
+#define MOTOR_RF 0x03
+#define MOTOR_RB 0x04
+
 int main()
 {
-	int i = 0;
-	int times = 6000;
+	int i;
 
-	uint8_t res;
-	float accel[3], gyro[3], magn[3];
-
-	mpu9250_address_t addr;
-
-	// Open a csv file to store the data
-	FILE *csv_fp = fopen("./data/test1_10.csv", "w+");
-	if (NULL == csv_fp)
-	{
-		perror("Fail to fopen csv_fd");
-		exit(EXIT_FAILURE);
-	}	
-
-	// Determinate the format of this csv file.
-	fprintf(csv_fp, "r_accel_x,r_accel_y,r_accel_z,r_gyro_x,r_gyro_y,r_gyro_z,"
-			"l_accel_x,l_accel_y,l_accel_z,l_gyro_x,l_gyro_y,l_gyro_z\n");
-
-	// Initialize MPU9250.
-	addr = MPU9250_ADDRESS_AD0_LOW;
-	res = mpu9250_basic_init(MPU9250_INTERFACE_IIC, addr);
-	if (res != 0)
-	{
-		perror("Fail to init MPU9250 (MPU9250_basic_init)");
-		return -1;
-	}
+	ax12_init();
 	
-	// Read accelerometer and gyroscope.
-	for (i = 0; i < times; ++i)
-	{
-		if (0 != mpu9250_basic_read(I2C_FLAG_RIGHT, accel, gyro, magn)) 
-		{
-			(void)mpu9250_basic_deinit();
-			return -1;
-		}
+	// (134 / 1023) * 114 ~= 15 RPM 
+	ax_move_speed(MOTOR_RF, 134);
+	ax_move_speed(MOTOR_RB, 134);
 	
-		// Output the value
-		fprintf(csv_fp, "%f,%f,%f,%f,%f,%f,", 
-				accel[0], accel[1], accel[2], gyro[0], gyro[1], gyro[2]);
-		
-		if (0 != mpu9250_basic_read(I2C_FLAG_LEFT, accel, gyro, magn)) 
-		{
-			(void)mpu9250_basic_deinit();
-			return -1;
-		}
+	ax_turn2angle(MOTOR_RF, 512);
+	ax_turn2angle(MOTOR_RB, 512);
 
-		// Output the value
-		fprintf(csv_fp, "%f,%f,%f,%f,%f,%f\n", 
-				accel[0], accel[1], accel[2], gyro[0], gyro[1], gyro[2]);
+	getchar();
+	printf("test begin\n");
+	
+	for (i = 0; i < 8; ++i)
+	{
+		// RF 90 degree, RB 60 degree	
+		// ax_turn2angle(MOTOR_RF, 200);
+		// ax_turn2angle(MOTOR_RB, 511-205);
 		
-		mpu9250_interface_delay_ms(10);		
+		// RF 120 degree, RB 150 degree
+		ax_turn2angle(MOTOR_RF, 101);
+		ax_turn2angle(MOTOR_RB, 511+512);
+		getchar();
+
+		ax_turn2angle(MOTOR_RF, 512);
+		ax_turn2angle(MOTOR_RB, 512);
+		getchar();
+		
+		printf("This is the %d turn\n", i+1);
 	}
-
-	// Deinit and finish.
-	fclose(csv_fp);
-	(void)mpu9250_basic_deinit();
 
 	return 0;
 
