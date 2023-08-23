@@ -2,10 +2,10 @@
 
 // MOTOR ID MACROS, 
 // L/R means left/right, F/B means forward/backward.
-#define MOTOR_LB 0x01
-#define MOTOR_LF 0x02
-#define MOTOR_RF 0x03
-#define MOTOR_RB 0x04
+#define MOTOR_RB 0x01
+#define MOTOR_RF 0x02
+#define MOTOR_LF 0x03
+#define MOTOR_LB 0x04
 
 int main(int argc, char *argv[])
 {
@@ -24,37 +24,37 @@ int main(int argc, char *argv[])
 
 
 	// Write instruction to ax12.
-	ax_move_speed(MOTOR_RF, 134);	
-	ax_move_speed(MOTOR_RB, 134);
+	ax_move_speed(MOTOR_LF, 134);	
+	ax_move_speed(MOTOR_LB, 134);
 
 	// Initial Position
-	ax_turn2angle(MOTOR_RF, 511);
-	ax_turn2angle(MOTOR_RB, 511);
+	ax_turn2angle(MOTOR_LF, 511);
+	ax_turn2angle(MOTOR_LB, 511);
 	getchar();
 
-	// RF 90 degree, RB -60 degree
-	ax_turn2angle(MOTOR_RF, 511-311);
-	ax_turn2angle(MOTOR_RB, 511-205);
+	// LF 60 degree, LB -60 degree
+	ax_turn2angle(MOTOR_LB, 511-205);
+	ax_turn2angle(MOTOR_LF, 511-205);
 	getchar();
 
-	// RF 90 degree, RB 60 degree
-	ax_turn2angle(MOTOR_RF, 511-311);
-	ax_turn2angle(MOTOR_RB, 511+205);
+	// LF 60 degree, LB 60 degree
+	ax_turn2angle(MOTOR_LB, 511+205);
+	ax_turn2angle(MOTOR_LF, 511-205);
 	getchar();
 
-	// RF 30 degree, RB 150 degree
-	ax_turn2angle(MOTOR_RF, 511-103);
-	ax_turn2angle(MOTOR_RB, 511+512);
+	// LF 30 degree, LB 150 degree
+	ax_turn2angle(MOTOR_LB, 511+512);
+	ax_turn2angle(MOTOR_LF, 511-103);
 	getchar();
 
-	// RF 120 degree, RB 0 degree
-	ax_turn2angle(MOTOR_RF, 511-410);
-	ax_turn2angle(MOTOR_RB, 511+0);
+	// LF 75 degree, LB 0 degree
+	ax_turn2angle(MOTOR_LB, 511+0);
+	ax_turn2angle(MOTOR_LF, 511-256);
 	getchar();
 
-	// RF 0 degree, RB 0 degree
-	ax_turn2angle(MOTOR_RF, 511);
-	ax_turn2angle(MOTOR_RB, 511);
+	// LF 0 degree, LB 0 degree
+	ax_turn2angle(MOTOR_LB, 511);
+	ax_turn2angle(MOTOR_LF, 511);
 	//getchar();
 
 	// Close the file.
