@@ -254,10 +254,13 @@ int main()
 				angle[0]/3.1415*180, angle[1]/3.1415*180, angle[2]/3.1415*180);
 		printf("x = %fm\ty = %fm\tz = %fm\n", position[0], position[1], position[2]);
 		
+		//fprintf(csv_fp, "%f,%f,%f,%f,%f,%f,%f\n", output_time,
+		//		position[0], position[1], position[2],
+		//		angle[0]/3.1415*180, angle[1]/3.1415*180, angle[2]/3.1415*180);	
 		fprintf(csv_fp, "%f,%f,%f,%f,%f,%f,%f\n", output_time,
-				position[0], position[1], position[2],
-				angle[0]/3.1415*180, angle[1]/3.1415*180, angle[2]/3.1415*180);	
-
+				a_nn[0], a_nn[1], a_nn[2],
+				w_n[0]/3.1415*180, w_n[1]/3.1415*180, w_n[2]/3.1415*180);	
+		
 		mpu9250_interface_delay_ms(10);
 
 	}	
