@@ -106,7 +106,7 @@ int main()
 		gettimeofday(&tv_s, NULL);	
 		
 		// Rectify the value read from mpu9250
-		accel[0] = (accel[0] + (1 + aver[0])) * LOCAL_GRAVITY;
+		accel[0] = (accel[0] - (1 + aver[0])) * LOCAL_GRAVITY;
 		accel[1] = (accel[1] - aver[1]) * LOCAL_GRAVITY;
 		accel[2] = (accel[2] - aver[2]) * LOCAL_GRAVITY;
 		gyro[0] = (gyro[0] - aver[3]) * 0.0174;
