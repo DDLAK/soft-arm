@@ -55,7 +55,7 @@ int main()
 	float output_time = 0;
 
 	int t = 0;
-	int times = 2000;
+	int times = 6000;
 
 	// Open a csv file to store the data.
 	FILE *csv_fp = fopen("./data/filter.csv","w+");
