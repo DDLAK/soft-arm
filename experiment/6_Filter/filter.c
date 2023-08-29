@@ -67,7 +67,7 @@ int main()
 
 	// Determinate the format of this csv file.
 	fprintf(csv_fp, "time,an_x,an_y,an_z,wn_x,wn_y,wn_z,"
-			"esti_x,esti_y,esti_z,esti_a,esti_b,esti_c\n");
+			"posi_x,posi_y,posi_z,angle_x,angle_y,angle_z\n");
 
 	mpu9250_address_t addr;
 
