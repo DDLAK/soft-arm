@@ -1,26 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <termios.h>
-#include <string.h>
-#include <bcm2835.h>
-#include <stdint.h>
-#include <stdarg.h>
+#include "driver_ax12.h"
 
 #define PIN_CTRL RPI_GPIO_P1_12
 
 #define SERIAL_PATH "/dev/serial0"
 #define BAUDRATE B1000000
-
-// MOTOR ID MACROS, 
-// L/R means left/right, F/B means forward/backward.
-#define MOTOR_RB 0x01
-#define MOTOR_RF 0x02
-#define MOTOR_LF 0x03
-#define MOTOR_LB 0x04
 
 // Two START_FLAGs indicate an incoming packet
 #define START_FLAG 0xFF
@@ -74,7 +57,91 @@
 #define BPS_19200	0x67
 #define BPS_9600	0xCF
 
-int write_packet(int fd, uint8_t id, uint8_t length, uint8_t instruction, uint8_t *params) 
+static int serial_fd;
+
+int ax12_init(void)
+{
+	struct termios serial_options;
+
+	// Initialize bcm2835 (raspberry pi zero w) chip.
+	if (!bcm2835_init())
+	{
+		printf("Fail to init bcm2835");
+		return -1;
+	}
+	bcm2835_gpio_fsel(PIN_CTRL, BCM2835_GPIO_FSEL_OUTP);
+
+	// Open device serial0.
+	serial_fd = open(SERIAL_PATH, O_RDWR | O_NOCTTY);
+	if (-1 == serial_fd)
+	{
+		perror("Open");
+		return -1;
+	}
+
+	if (0 == isatty(serial_fd))
+	{
+		printf("Wrong file descriptor: serial_fd is not an open termial device!");
+		return -1;
+	}
+
+	// Set up the UART.
+	if (-1 == tcgetattr(serial_fd, &serial_options))
+	{
+		perror("Get termial attributes (tcgetattr)");
+		return -1;
+	}
+	
+	// Only modified the attribute(s) we are interested in.
+	// Default protocol of AX12: speed 1000000 bps, 8 bit, 1 stop, No parity.
+	serial_options.c_iflag &= ~(INPCK | ISTRIP);
+	serial_options.c_cflag |= CLOCAL | CREAD | CS8;
+	serial_options.c_cflag &= ~(PARENB | CSTOPB);
+	serial_options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
+	serial_options.c_cc[VMIN] = 1;
+	serial_options.c_cc[VTIME] = 0;
+	if (-1 == cfsetispeed(&serial_options, BAUDRATE))
+	{
+		perror("Fail to set input speed (cfsetispeed)");
+		return -1;
+	}
+	
+	if (-1 == cfsetospeed(&serial_options, BAUDRATE))
+	{
+		perror("Fail to set input speed (cfsetispeed)");
+		return -1;
+	}
+
+
+	// Reflush and set the new structure.
+	if (-1 == tcflush(serial_fd, TCIFLUSH))
+	{
+		perror("Fail to flush the serial_fd (tcflush)");
+		return -1;
+	}
+	if (-1 == tcsetattr(serial_fd, TCSANOW, &serial_options))
+	{
+		perror("Set attributes in structure termios (tcsetattr)");
+		return -1;
+	}
+
+	return 0;
+}
+
+int ax12_deinit(void)
+{
+	if (-1 == close(serial_fd))
+	{
+		perror("Close");
+		return -1;
+	}
+
+	bcm2835_close();
+
+	return 0;
+}
+
+int write_packet(uint8_t id, uint8_t length, uint8_t instruction, uint8_t *params) 
 {
 	// Set the PIN_CTRL in order to write.
 	bcm2835_gpio_write(PIN_CTRL, HIGH);
@@ -101,7 +168,7 @@ int write_packet(int fd, uint8_t id, uint8_t length, uint8_t instruction, uint8_
 	}
 	buf[length+3] = ~(id + length + instruction + sum);
 
-	if (-1 == write(fd, buf, (length + 4)))
+	if (-1 == write(serial_fd,buf, (length + 4)))
 	{
 		perror("Fail to write in 'write_packet'");
 		return -1;
@@ -112,7 +179,7 @@ int write_packet(int fd, uint8_t id, uint8_t length, uint8_t instruction, uint8_
 	return 0;
 }
 
-int read_packet(int fd, uint8_t length)
+int read_packet(uint8_t length)
 {
 	// Reset the PIN_CTRL in order to read.
 	bcm2835_gpio_write(PIN_CTRL, LOW);
@@ -124,7 +191,7 @@ int read_packet(int fd, uint8_t length)
 		return -1;
 	}
 
-	if (-1 == read(fd, buf, length))
+	if (-1 == read(serial_fd,buf, length))
 	{
 		perror("Fail to read in 'read_packet'");
 		return -1;
@@ -138,7 +205,7 @@ int read_packet(int fd, uint8_t length)
 	return 0;
 }
 
-int set_id(int fd, uint8_t id, uint8_t new_id)
+int set_id(uint8_t id, uint8_t new_id)
 {
 	uint8_t length = 0x02 + 2;
 	uint8_t *params = (uint8_t *)malloc((length - 2) * sizeof(uint8_t));
@@ -151,7 +218,7 @@ int set_id(int fd, uint8_t id, uint8_t new_id)
 	params[0] = CT_ID;
 	params[1] = new_id;
 	
-	if (-1 == write_packet(fd, id, length, I_WRITE, params))
+	if (-1 == write_packet(id, length, I_WRITE, params))
 	{
 		printf("Fail to write packet in 'set_id'!\n");
 		return -1;
@@ -162,7 +229,7 @@ int set_id(int fd, uint8_t id, uint8_t new_id)
 	return 0;
 }
 
-int set_status_return_level(int fd, uint8_t id, uint8_t level)
+int set_status_return_level(uint8_t id, uint8_t level)
 {
 	if ((level != 0) && (level != 1) && (level != 2))
 	{
@@ -181,7 +248,7 @@ int set_status_return_level(int fd, uint8_t id, uint8_t level)
 	params[0] = CT_STATUS_RETURN_LEVEL;
 	params[1] = level;
 	
-	if (-1 == write_packet(fd, id, length, I_WRITE, params))
+	if (-1 == write_packet(id, length, I_WRITE, params))
 	{
 		printf("Fail to write packet in 'set_status_return_level'!\n");
 		return -1;
@@ -192,7 +259,7 @@ int set_status_return_level(int fd, uint8_t id, uint8_t level)
 	return 0;
 }
 
-int set_baud_rate(int fd, uint8_t id, uint8_t baud_rate)
+int set_baud_rate(uint8_t id, uint8_t baud_rate)
 {
 	uint8_t length = 0x02 + 2;
 	uint8_t *params = (uint8_t *)malloc((length - 2) * sizeof(uint8_t));
@@ -205,7 +272,7 @@ int set_baud_rate(int fd, uint8_t id, uint8_t baud_rate)
 	params[0] = CT_BAUD_RATE;
 	params[1] = baud_rate;
 	
-	if (-1 == write_packet(fd, id, length, I_WRITE, params))
+	if (-1 == write_packet(id, length, I_WRITE, params))
 	{
 		printf("Fail to write packet in 'set_baud_rate'!\n");
 		return -1;
@@ -217,12 +284,12 @@ int set_baud_rate(int fd, uint8_t id, uint8_t baud_rate)
 }
 
 // @brief: Write PING instruction with certain id.
-int ax_ping(int fd, uint8_t id)
+int ax_ping(uint8_t id)
 {
 	uint8_t length = 0x00 + 2;
 	uint8_t *params = NULL;
 
-	if (-1 == write_packet(fd, id, length, I_PING, params))
+	if (-1 == write_packet(id, length, I_PING, params))
 	{
 		printf("Fail to write packet in 'ping'!\n");
 		return -1;
@@ -232,12 +299,12 @@ int ax_ping(int fd, uint8_t id)
 }
 
 // @brief: Reset the Control Table.
-int ax_reset(int fd, uint8_t id)
+int ax_reset(uint8_t id)
 {
 	uint8_t length = 0x00 + 2;
 	uint8_t *params = NULL;
 
-	if (-1 == write_packet(fd, id, length, I_RESET, params))
+	if (-1 == write_packet(id, length, I_RESET, params))
 	{
 		printf("Fail to write packet in 'ping'!\n");
 		return -1;
@@ -248,7 +315,7 @@ int ax_reset(int fd, uint8_t id)
 
 
 // @brief: Turn to a specific angle with certain id.
-int ax_turn2angle(int fd, uint8_t id, int angle)
+int ax_turn2angle(uint8_t id, int angle)
 {
 	if (angle < 0 || angle > 1023)
 	{
@@ -271,7 +338,7 @@ int ax_turn2angle(int fd, uint8_t id, int angle)
 	params[1] = goal_posi_low;
 	params[2] = goal_posi_high;
 
-	if (-1 == write_packet(fd, id, length, I_WRITE, params))
+	if (-1 == write_packet(id, length, I_WRITE, params))
 	{
 		printf("Fail to write packet in 'ax_turn2angle'!\n");
 		return -1;
@@ -282,7 +349,7 @@ int ax_turn2angle(int fd, uint8_t id, int angle)
 	return 0;
 }
 
-int ax_move_speed(int fd, uint8_t id, int speed)
+int ax_move_speed(uint8_t id, int speed)
 {
 	if (speed < 1 || speed > 1023)
 	{
@@ -305,7 +372,7 @@ int ax_move_speed(int fd, uint8_t id, int speed)
 	params[1] = move_speed_low;
 	params[2] = move_speed_high;
 
-	if (-1 == write_packet(fd, id, length, I_WRITE, params))
+	if (-1 == write_packet(id, length, I_WRITE, params))
 	{
 		printf("Fail to write packet in 'ax_move_speed'!\n");
 		return -1;
@@ -317,119 +384,3 @@ int ax_move_speed(int fd, uint8_t id, int speed)
 
 }
 
-int main(int argc, char *argv[])
-{
-	int i, j;
-	int serial_fd;
-	struct termios serial_options;
-
-	if (!bcm2835_init())
-	{
-		printf("Fail to init bcm2835");
-		exit(EXIT_FAILURE);
-	}
-	bcm2835_gpio_fsel(PIN_CTRL, BCM2835_GPIO_FSEL_OUTP);
-
-	// Open device serial0.
-	serial_fd = open(SERIAL_PATH, O_RDWR | O_NOCTTY);
-	if (-1 == serial_fd)
-	{
-		perror("Open");
-		exit(EXIT_FAILURE);
-	}
-
-	printf("serial_fd %d\n", serial_fd);
-
-	if (0 == isatty(serial_fd))
-	{
-		printf("Wrong file descriptor: serial_fd is not an open termial device!");
-		exit(EXIT_FAILURE);
-	}
-
-	printf("serial_fd name: %s\n", ttyname(serial_fd));
-
-	// Set up the UART.
-	if (-1 == tcgetattr(serial_fd, &serial_options))
-	{
-		perror("Get termial attributes (tcgetattr)");
-		exit(EXIT_FAILURE);
-	}
-	
-	// Only modified the attribute(s) we are interested in.
-	// Default protocol of AX12: speed 1000000 bps, 8 bit, 1 stop, No parity.
-	serial_options.c_iflag &= ~(INPCK | ISTRIP);
-	serial_options.c_cflag |= CLOCAL | CREAD | CS8;
-	serial_options.c_cflag &= ~(PARENB | CSTOPB);
-	serial_options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
-	serial_options.c_cc[VMIN] = 1;
-	serial_options.c_cc[VTIME] = 0;
-	if (-1 == cfsetispeed(&serial_options, BAUDRATE))
-	{
-		perror("Fail to set input speed (cfsetispeed)");
-		exit(EXIT_FAILURE);
-	}
-	
-	if (-1 == cfsetospeed(&serial_options, BAUDRATE))
-	{
-		perror("Fail to set input speed (cfsetispeed)");
-		exit(EXIT_FAILURE);
-	}
-
-
-	// Reflush and set the new structure.
-	if (-1 == tcflush(serial_fd, TCIFLUSH))
-	{
-		perror("Fail to flush the serial_fd (tcflush)");
-		exit(EXIT_FAILURE);
-	}
-	if (-1 == tcsetattr(serial_fd, TCSANOW, &serial_options))
-	{
-		perror("Set attributes in structure termios (tcsetattr)");
-		exit(EXIT_FAILURE);
-	}
-
-//	// Open a test fd.
-//	int test_fd = open("./output", O_RDWR | O_CREAT);
-//	if (-1 == test_fd)
-//	{
-//		perror("Fail to open test_fd");
-//		exit(EXIT_FAILURE);
-//	}
-//	write_packet(test_fd, 0x01, 0x05, I_WRITE, 0x1E, 0x96, 0x00);
-
-
-	// Write instruction to ax12.
-	ax_move_speed(serial_fd, MOTOR_LB, 100);
-	ax_move_speed(serial_fd, MOTOR_LF, 100);
-
-	ax_turn2angle(serial_fd, MOTOR_LB, 0);
-	ax_turn2angle(serial_fd, MOTOR_LF, 511);
-	bcm2835_delay(3000);
-
-	for (i = 511; i >= 0; i=i-20)
-	{
-		ax_turn2angle(serial_fd, MOTOR_LF, i);
-		ax_turn2angle(serial_fd, MOTOR_LB, 0);
-		bcm2835_delay(7000);
-		for (j = 0; j <= 1023; ++j)
-		{
-			ax_turn2angle(serial_fd, MOTOR_LB, j);
-			bcm2835_delay(10);
-		}
-		printf("i=%d, j=%d\n", i, j);
-	}
-	//ax_turn2angle(serial_fd, MOTOR_LB, 511);
-	//ax_turn2angle(serial_fd, MOTOR_RB, 1023);
-	//ax_turn2angle(serial_fd, MOTOR_LF, 511);
-	//ax_turn2angle(serial_fd, MOTOR_RF, 0);
-
-	// Close the file.
-	if (-1 == close(serial_fd))
-	{
-		perror("Close");
-		exit(EXIT_FAILURE);
-	}
-	bcm2835_close();
-
-	return 0;
-}

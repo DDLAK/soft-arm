@@ -40,21 +40,6 @@ int main()
 
 	struct timeval tv_s, tv_e;
 	float interval = 0;
-	float output_time = 0;
-
-	int t = 0;
-	int times = 2000;
-
-	// Open a csv file to store the data.
-	FILE *csv_fp = fopen("./data/estimation.csv", "w+");
-	if (NULL == csv_fp)
-	{
-		perror("Fail to fopen csv_fp");
-		exit(EXIT_FAILURE);
-	}
-
-	// Determinate the format of this csv file.
-	fprintf(csv_fp, "time,esti_x,esti_y,esti_z,esti_a,esti_b,esti_c\n");
 
 	mpu9250_address_t addr;
 
@@ -88,8 +73,7 @@ int main()
 	q_past[0] = 1;
 	// Initialize the start time
 	gettimeofday(&tv_s, NULL);	
-	output_time = 0;
-	for (t = 0; t < times; ++t)
+	while (1)
 	{
 		// Read accelerometer and gyroscope value from the right mpu9250..
 		if (0 != mpu9250_basic_read(I2C_FLAG_LEFT, accel, gyro, magn)) 
@@ -102,7 +86,6 @@ int main()
 		interval = ((tv_e.tv_sec - tv_s.tv_sec) * 1000) + 
 			((tv_e.tv_usec - tv_s.tv_usec) / 1000);
 		interval /= 1000;
-		output_time += interval;
 		gettimeofday(&tv_s, NULL);	
 		
 		// Rectify the value read from mpu9250
@@ -153,16 +136,16 @@ int main()
 		R_nb[2][1] = 2 * (q_new[3] * q_new[2] + q_new[0] * q_new[1]);
 		R_nb[2][2] = pow(q_new[0], 2) - pow(q_new[1], 2) - pow(q_new[2], 2) + pow(q_new[3], 2);
 		
-		// int j = 0;
-		// printf("R_nb = \n");
-		// for(i = 0; i < 3; ++i)
-		// {
-		// 	for(j = 0; j < 3; ++j)
-		// 	{
-		// 		printf("%f ", R_nb[i][j]);
-		// 	}
-		// 	printf("\n");
-		// }
+		int j = 0;
+		printf("R_nb = \n");
+		for(i = 0; i < 3; ++i)
+		{
+			for(j = 0; j < 3; ++j)
+			{
+				printf("%f ", R_nb[i][j]);
+			}
+			printf("\n");
+		}
 
 		// Update the acceleration with respect to navigation frame
 		a_nn[0] = R_nb[0][0] * accel[0] + R_nb[0][1] * accel[1] + R_nb[0][2] * accel[2];
@@ -173,8 +156,8 @@ int main()
 		for (i = 0; i < 3; ++i)
 		{
 			v_new[i] = v_past[i] + a_nn[i] * interval;
-			// printf("accel[%d] = %f\t", i, accel[i]);
-			// printf("a_nn[%d] = %f\n", i, a_nn[i]);
+			printf("accel[%d] = %f\t", i, accel[i]);
+			printf("a_nn[%d] = %f\n", i, a_nn[i]);
 			position[i] += 0.5 * interval * (v_past[i] + v_new[i]);
 			v_past[i] = v_new[i];
 		}
@@ -188,7 +171,7 @@ int main()
 		angle[1] = angle[1] + w_n[1] * interval;
 		angle[2] = angle[2] + w_n[2] * interval;
 
-		// printf("w_n[0] = %f\tgyro[0] = %f\n", w_n[0], gyro[0]);
+		printf("w_n[0] = %f\tgyro[0] = %f\n", w_n[0], gyro[0]);
 
 		// Update the q_past		
 		for (i = 0; i < 4; ++i)
@@ -200,10 +183,6 @@ int main()
 		printf("x = %fdegree\ty = %fdegree\tz=%fdegree\n", 
 				angle[0]/3.1415*180, angle[1]/3.1415*180, angle[2]/3.1415*180);
 		printf("x = %fm\ty = %fm\tz = %fm\n", position[0], position[1], position[2]);
-
-		fprintf(csv_fp, "%f,%f,%f,%f,%f,%f,%f\n", output_time,
-				position[0], position[1], position[2],
-				angle[0]/3.1415*180, angle[1]/3.1415*180, angle[2]/3.1415*180);
 
 		mpu9250_interface_delay_ms(10);
 
