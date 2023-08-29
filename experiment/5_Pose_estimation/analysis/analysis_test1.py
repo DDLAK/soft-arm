@@ -8,61 +8,33 @@ import pandas as pd
 
 path = "../data/test1_"
 
-#ax = []
-# ay = []
-# az = []
-# gx = []
-# gy = []
-# gz = []
-# for i in range(1, 6):
-   # Import the data which stored in csv files.
-csv_path = path + str(1) + ".csv"
+csv_path = path + str(5) + ".csv"
 rawdata = pd.read_csv(csv_path)
-#
-#     ax.append(np.average(rawdata['r_accel_x']))
-#     ay.append(np.average(rawdata['r_accel_y']))
-#     az.append(np.average(rawdata['r_accel_z']))
-#     gx.append(np.average(rawdata['r_gyro_x']))
-#     gy.append(np.average(rawdata['r_gyro_y']))
-#     gz.append(np.average(rawdata['r_gyro_z']))
-#
-# #print(np.average(ax))
-#print(np.average(ay))
-#print(np.average(az))
-#print(np.average(gx))
-#print(np.average(gy))
-#print(np.average(gz))
 
-#Pre-process the data.
-x = np.linspace(0, 60, 3600, False)
+# Pre-process the data.
+rawdata['l_accel_x'] *= 9.8118
+rawdata['l_accel_y'] *= 9.8118
+rawdata['l_accel_z'] *= 9.8118
 
 # Configure the figure.
 fig = plt.figure()
 
 # 折线图
-plt.plot(x, list(rawdata['r_accel_x']), 'r')
-plt.plot(x, list(rawdata['r_accel_y']), 'y')
-plt.plot(x, list(rawdata['r_accel_z']), 'g')
-# plt.plot(x, list(rawdata['r_gyro_x']), 'r')
-# l = []
-# for i in range(3600):
-#     l.append(np.average(rawdata['r_gyro_x']))
-# plt.plot(x, l, 'b')
-# plt.plot(x, list(rawdata['r_gyro_y']), 'y')
-# l = []
-# for i in range(3600):
-#     l.append(np.average(rawdata['r_gyro_y']))
-# plt.plot(x, l, 'b')
-# plt.plot(x, list(rawdata['r_gyro_z']), 'g')
-# l = []
-# for i in range(3600):
-#     l.append(np.average(rawdata['r_gyro_z']))
-# plt.plot(x, l, 'b')
+x = np.linspace(0, 60, 3600, False)
+plt.plot(x, list(rawdata['l_accel_x']), 'r')
+aver_x = np.ones(shape=3600) * np.average(rawdata['l_accel_x'])
+plt.plot(x, aver_x, 'black')
+
+plt.plot(x, list(rawdata['l_accel_y']), 'y')
+aver_y = np.ones(shape=3600) * np.average(rawdata['l_accel_y'])
+plt.plot(x, aver_y, 'black')
+
+plt.plot(x, list(rawdata['l_accel_z']), 'g')
+aver_z = np.ones(shape=3600) * np.average(rawdata['l_accel_z'])
+plt.plot(x, aver_z, 'black')
 
 plt.show()
 
 # 箱线图
 # plt.boxplot(list(rawdata['r_gyro_x']))
 
-# display the plot
-# plt.show()
