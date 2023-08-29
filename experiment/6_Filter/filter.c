@@ -118,7 +118,7 @@ int main()
 		gettimeofday(&tv_s, NULL);	
 		
 		// Rectify the value read from mpu9250
-		accel[0] = (accel[0] + (1 + aver[0])) * LOCAL_GRAVITY;
+		accel[0] = (accel[0] - (1 + aver[0])) * LOCAL_GRAVITY;
 		accel[1] = (accel[1] - aver[1]) * LOCAL_GRAVITY;
 		accel[2] = (accel[2] - aver[2]) * LOCAL_GRAVITY;
 		gyro[0] = (gyro[0] - aver[3]) * 0.0174;
@@ -255,8 +255,8 @@ int main()
 		printf("x = %fm\ty = %fm\tz = %fm\n", position[0], position[1], position[2]);
 		
 		fprintf(csv_fp, "%f,%f,%f,%f,%f,%f,%f\n", output_time,
-				a_nn[0], a_nn[1], a_nn[2],
-				w_n[0]/3.1415*180, w_n[1]/3.1415*180, w_n[2]/3.1415*180);	
+				position[0], position[1], position[2],
+				angle[0]/3.1415*180, angle[1]/3.1415*180, angle[2]/3.1415*180);	
 
 		mpu9250_interface_delay_ms(10);
 
