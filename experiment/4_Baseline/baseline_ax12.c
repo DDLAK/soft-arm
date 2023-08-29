@@ -32,17 +32,17 @@ int main(int argc, char *argv[])
 	ax_turn2angle(MOTOR_LB, 511);
 	getchar();
 
-	// LF 60 degree, LB -60 degree
+	// LF 60 degree, LB 60 degree
 	ax_turn2angle(MOTOR_LB, 511-205);
 	ax_turn2angle(MOTOR_LF, 511-205);
 	getchar();
 
-	// LF 60 degree, LB 60 degree
+	// LF 60 degree, LB -60 degree
 	ax_turn2angle(MOTOR_LB, 511+205);
 	ax_turn2angle(MOTOR_LF, 511-205);
 	getchar();
 
-	// LF 30 degree, LB 150 degree
+	// LF 30 degree, LB -150 degree
 	ax_turn2angle(MOTOR_LB, 511+512);
 	ax_turn2angle(MOTOR_LF, 511-103);
 	getchar();
