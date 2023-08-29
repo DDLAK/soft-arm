@@ -169,11 +169,12 @@ int main()
 		error[0] = gravity_accel[1] * gravity_gyro[2] - gravity_accel[2] * gravity_gyro[1];
 		error[1] = gravity_accel[2] * gravity_gyro[0] - gravity_accel[0] * gravity_gyro[2];
 		error[2] = gravity_accel[0] * gravity_gyro[1] - gravity_accel[1] * gravity_gyro[0];
+		printf("error: %f, %f, %f\n", error[0], error[1], error[2]);
 
-		// Integrated the error.
-		integ_error[0] += error[0] * 0.001 * interval;
-		integ_error[1] += error[1] * 0.001 * interval;
-		integ_error[2] += error[2] * 0.001 * interval;
+		// // Integrated the error.
+		// integ_error[0] += error[0] * 0.001 * interval;
+		// integ_error[1] += error[1] * 0.001 * interval;
+		// integ_error[2] += error[2] * 0.001 * interval;
 
 		// Rectify the gyro's value.
 		rect_gyro[0] = gyro[0] + 0.8 * error[0] + integ_error[0]; 
