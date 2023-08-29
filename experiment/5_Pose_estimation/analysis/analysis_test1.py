@@ -21,16 +21,16 @@ fig = plt.figure()
 
 # 折线图
 x = np.linspace(0, 60, 3600, False)
-plt.plot(x, list(rawdata['l_accel_x']), 'r')
-aver_x = np.ones(shape=3600) * np.average(rawdata['l_accel_x'])
+plt.plot(x, list(rawdata['l_gyro_x']), 'r')
+aver_x = np.ones(shape=3600) * np.average(rawdata['l_gyro_x'])
 plt.plot(x, aver_x, 'black')
 
-plt.plot(x, list(rawdata['l_accel_y']), 'y')
-aver_y = np.ones(shape=3600) * np.average(rawdata['l_accel_y'])
+plt.plot(x, list(rawdata['l_gyro_y']), 'y')
+aver_y = np.ones(shape=3600) * np.average(rawdata['l_gyro_y'])
 plt.plot(x, aver_y, 'black')
 
-plt.plot(x, list(rawdata['l_accel_z']), 'g')
-aver_z = np.ones(shape=3600) * np.average(rawdata['l_accel_z'])
+plt.plot(x, list(rawdata['l_gyro_z']), 'g')
+aver_z = np.ones(shape=3600) * np.average(rawdata['l_gyro_z'])
 plt.plot(x, aver_z, 'black')
 
 plt.show()
