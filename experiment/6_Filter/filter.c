@@ -172,9 +172,9 @@ int main()
 		printf("error: %f, %f, %f\n", error[0], error[1], error[2]);
 
 		// // Integrated the error.
-		// integ_error[0] += error[0] * 0.001 * interval;
-		// integ_error[1] += error[1] * 0.001 * interval;
-		// integ_error[2] += error[2] * 0.001 * interval;
+		integ_error[0] += error[0] * 0.001 * interval;
+		integ_error[1] += error[1] * 0.001 * interval;
+		integ_error[2] += error[2] * 0.001 * interval;
 
 		// Rectify the gyro's value.
 		rect_gyro[0] = gyro[0] + 0.8 * error[0] + integ_error[0]; 
@@ -206,16 +206,16 @@ int main()
 		R_nb[2][1] = 2 * (q_rect_new[3] * q_rect_new[2] + q_rect_new[0] * q_rect_new[1]);
 		R_nb[2][2] = pow(q_rect_new[0], 2) - pow(q_rect_new[1], 2) - pow(q_rect_new[2], 2) + pow(q_rect_new[3], 2);
 		
-		// int j = 0;
-		// printf("R_nb = \n");
-		// for(i = 0; i < 3; ++i)
-		// {
-		//	for(j = 0; j < 3; ++j)
-		//	{
-		//		printf("%f ", R_nb[i][j]);
-	 	//	}
-		// 	printf("\n");
-		// }
+		int j = 0;
+		printf("R_nb = \n");
+		for(i = 0; i < 3; ++i)
+		{
+			for(j = 0; j < 3; ++j)
+			{
+				printf("%f ", R_nb[i][j]);
+	 		}
+		 	printf("\n");
+		 }
 
 		// Update the acceleration with respect to navigation frame
 		a_nn[0] = R_nb[0][0] * accel[0] + R_nb[0][1] * accel[1] + R_nb[0][2] * accel[2];
@@ -226,8 +226,8 @@ int main()
 		for (i = 0; i < 3; ++i)
 		{
 			v_new[i] = v_past[i] + a_nn[i] * interval;
-			// printf("accel[%d] = %f\t", i, accel[i]);
-			// printf("a_nn[%d] = %f\n", i, a_nn[i]);
+			printf("a_nn[%d] = %f\t", i, a_nn[i]);
+			printf("v[%d] = %f\n", i, 0.5*(v_new[i]+v_past[i]));
 			position[i] += 0.5 * interval * (v_past[i] + v_new[i]);
 			v_past[i] = v_new[i];
 		}
@@ -255,8 +255,8 @@ int main()
 		printf("x = %fm\ty = %fm\tz = %fm\n", position[0], position[1], position[2]);
 		
 		fprintf(csv_fp, "%f,%f,%f,%f,%f,%f,%f\n", output_time,
-				position[0], position[1], position[2],
-				angle[0]/3.1415*180, angle[1]/3.1415*180, angle[2]/3.1415*180);	
+				a_nn[0], a_nn[1], a_nn[2],
+				w_n[0]/3.1415*180, w_n[1]/3.1415*180, w_n[2]/3.1415*180);	
 
 		mpu9250_interface_delay_ms(10);
 
