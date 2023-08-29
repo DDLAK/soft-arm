@@ -66,7 +66,8 @@ int main()
 	}
 
 	// Determinate the format of this csv file.
-	fprintf(csv_fp, "time,esti_x,esti_y,esti_z,esti_a,esti_b,esti_c\n");
+	fprintf(csv_fp, "time,an_x,an_y,an_z,wn_x,wn_y,wn_z,"
+			"esti_x,esti_y,esti_z,esti_a,esti_b,esti_c\n");
 
 	mpu9250_address_t addr;
 
@@ -145,7 +146,7 @@ int main()
 		q_new[0] = q_past[0] - 0.5 * interval * (gyro[0] * q_past[1] + gyro[1] * q_past[2] + gyro[2] * q_past[3]);
 		q_new[1] = q_past[1] + 0.5 * interval * (gyro[0] * q_past[0] - gyro[1] * q_past[3] + gyro[2] * q_past[2]);
 		q_new[2] = q_past[2] + 0.5 * interval * (gyro[0] * q_past[3] + gyro[1] * q_past[0] - gyro[2] * q_past[1]);
-		q_new[3] = q_past[3] + 0.5 * interval * (-1*gyro[2] * q_past[2] + gyro[1] * q_past[1] + gyro[2] * q_past[0]);
+		q_new[3] = q_past[3] + 0.5 * interval * (-1*gyro[0] * q_past[2] + gyro[1] * q_past[1] + gyro[2] * q_past[0]);
 
 		// Normalize the q_new
 		norm_q = 1 / sqrt(pow(q_new[0],2) + pow(q_new[1],2) + pow(q_new[2],2)+pow(q_new[3],2));
@@ -169,7 +170,7 @@ int main()
 		error[0] = gravity_accel[1] * gravity_gyro[2] - gravity_accel[2] * gravity_gyro[1];
 		error[1] = gravity_accel[2] * gravity_gyro[0] - gravity_accel[0] * gravity_gyro[2];
 		error[2] = gravity_accel[0] * gravity_gyro[1] - gravity_accel[1] * gravity_gyro[0];
-		printf("error: %f, %f, %f\n", error[0], error[1], error[2]);
+		//printf("error: %f, %f, %f\n", error[0], error[1], error[2]);
 
 		// // Integrated the error.
 		integ_error[0] += error[0] * 0.001 * interval;
@@ -186,7 +187,7 @@ int main()
 		q_rect_new[0] = q_past[0] - 0.5 * interval * (rect_gyro[0] * q_past[1] + rect_gyro[1] * q_past[2] + rect_gyro[2] * q_past[3]);
 		q_rect_new[1] = q_past[1] + 0.5 * interval * (rect_gyro[0] * q_past[0] - rect_gyro[1] * q_past[3] + rect_gyro[2] * q_past[2]);
 		q_rect_new[2] = q_past[2] + 0.5 * interval * (rect_gyro[0] * q_past[3] + rect_gyro[1] * q_past[0] - rect_gyro[2] * q_past[1]);
-		q_rect_new[3] = q_past[3] + 0.5 * interval * (-1*rect_gyro[2] * q_past[2] + rect_gyro[1] * q_past[1] + rect_gyro[2] * q_past[0]);
+		q_rect_new[3] = q_past[3] + 0.5 * interval * (-1*rect_gyro[0] * q_past[2] + rect_gyro[1] * q_past[1] + rect_gyro[2] * q_past[0]);
 
 		// Normalize the q_new
 		norm_q = 1 / sqrt(pow(q_rect_new[0],2) + pow(q_rect_new[1],2) + pow(q_rect_new[2],2) + pow(q_rect_new[3],2));
@@ -206,16 +207,16 @@ int main()
 		R_nb[2][1] = 2 * (q_rect_new[3] * q_rect_new[2] + q_rect_new[0] * q_rect_new[1]);
 		R_nb[2][2] = pow(q_rect_new[0], 2) - pow(q_rect_new[1], 2) - pow(q_rect_new[2], 2) + pow(q_rect_new[3], 2);
 		
-		int j = 0;
-		printf("R_nb = \n");
-		for(i = 0; i < 3; ++i)
-		{
-			for(j = 0; j < 3; ++j)
-			{
-				printf("%f ", R_nb[i][j]);
-	 		}
-		 	printf("\n");
-		 }
+		//int j = 0;
+		//printf("R_nb = \n");
+		//for(i = 0; i < 3; ++i)
+		//{
+		//	for(j = 0; j < 3; ++j)
+		//	{
+		//		printf("%f ", R_nb[i][j]);
+	 	//	}
+		//	printf("\n");
+		// }
 
 		// Update the acceleration with respect to navigation frame
 		a_nn[0] = R_nb[0][0] * accel[0] + R_nb[0][1] * accel[1] + R_nb[0][2] * accel[2];
@@ -226,8 +227,8 @@ int main()
 		for (i = 0; i < 3; ++i)
 		{
 			v_new[i] = v_past[i] + a_nn[i] * interval;
-			printf("a_nn[%d] = %f\t", i, a_nn[i]);
-			printf("v[%d] = %f\n", i, 0.5*(v_new[i]+v_past[i]));
+			// printf("a_nn[%d] = %f\t", i, a_nn[i]);
+			// printf("v[%d] = %f\n", i, 0.5*(v_new[i]+v_past[i]));
 			position[i] += 0.5 * interval * (v_past[i] + v_new[i]);
 			v_past[i] = v_new[i];
 		}
@@ -253,16 +254,14 @@ int main()
 		printf("x = %fdegree\ty = %fdegree\tz=%fdegree\n", 
 				angle[0]/3.1415*180, angle[1]/3.1415*180, angle[2]/3.1415*180);
 		printf("x = %fm\ty = %fm\tz = %fm\n", position[0], position[1], position[2]);
-		
-		//fprintf(csv_fp, "%f,%f,%f,%f,%f,%f,%f\n", output_time,
-		//		position[0], position[1], position[2],
-		//		angle[0]/3.1415*180, angle[1]/3.1415*180, angle[2]/3.1415*180);	
-		fprintf(csv_fp, "%f,%f,%f,%f,%f,%f,%f\n", output_time,
+	
+		fprintf(csv_fp, "%f,%f,%f,%f,%f,%f,%f,", output_time,
 				a_nn[0], a_nn[1], a_nn[2],
-				w_n[0]/3.1415*180, w_n[1]/3.1415*180, w_n[2]/3.1415*180);	
-		
-		mpu9250_interface_delay_ms(10);
-
+				w_n[0]/3.1415*180, w_n[1]/3.1415*180, w_n[2]/3.1415*180);		
+		fprintf(csv_fp, "%f,%f,%f,%f,%f,%f\n",
+				position[0], position[1], position[2],
+				angle[0]/3.1415*180, angle[1]/3.1415*180, angle[2]/3.1415*180);	
+	
 	}	
 	
 	// Deinit and finish.
