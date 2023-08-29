@@ -15,7 +15,7 @@ plt.plot(x, list(estimated_data['esti_x']), label='x')
 plt.plot(x, list(estimated_data['esti_y']), label='y')
 
 plt.plot(x, list(estimated_data['esti_z']), label='z')
-aver_z = np.ones(shape=2000) * np.average(estimated_data['esti_z'])
+aver_z = np.ones(shape=6000) * np.average(estimated_data['esti_z'])
 plt.plot(x, aver_z, 'black')
 
 plt.legend()
