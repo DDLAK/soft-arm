@@ -54,7 +54,8 @@ int main()
 	}
 
 	// Determinate the format of this csv file.
-	fprintf(csv_fp, "time,esti_x,esti_y,esti_z,esti_a,esti_b,esti_c\n");
+	fprintf(csv_fp, "time,an_x,an_y,an_z,wn_x,wn_y,wn_z,"
+			"posi_x,posi_y,posi_z,angle_x,angle_y,angle_z\n");
 
 	mpu9250_address_t addr;
 
@@ -133,7 +134,7 @@ int main()
 		q_new[0] = q_past[0] - 0.5 * interval * (gyro[0] * q_past[1] + gyro[1] * q_past[2] + gyro[2] * q_past[3]);
 		q_new[1] = q_past[1] + 0.5 * interval * (gyro[0] * q_past[0] - gyro[1] * q_past[3] + gyro[2] * q_past[2]);
 		q_new[2] = q_past[2] + 0.5 * interval * (gyro[0] * q_past[3] + gyro[1] * q_past[0] - gyro[2] * q_past[1]);
-		q_new[3] = q_past[3] + 0.5 * interval * (-1*gyro[2] * q_past[2] + gyro[1] * q_past[1] + gyro[2] * q_past[0]);
+		q_new[3] = q_past[3] + 0.5 * interval * (-1*gyro[0] * q_past[2] + gyro[1] * q_past[1] + gyro[2] * q_past[0]);
 
 		// Normalize the q_new
 		norm_q = 1 / sqrt(pow(q_new[0],2) + pow(q_new[1],2) + pow(q_new[2],2)+pow(q_new[3],2));
@@ -201,7 +202,10 @@ int main()
 				angle[0]/3.1415*180, angle[1]/3.1415*180, angle[2]/3.1415*180);
 		printf("x = %fm\ty = %fm\tz = %fm\n", position[0], position[1], position[2]);
 
-		fprintf(csv_fp, "%f,%f,%f,%f,%f,%f,%f\n", output_time,
+		fprintf(csv_fp, "%f,%f,%f,%f,%f,%f,%f", output_time,
+				a_nn[0], a_nn[1], a_nn[2],
+				w_n[0]/3.1415*180, w_n[1]/3.1415*180, w_n[2]/3.1415*180);
+		fprintf(csv_fp, "%f,%f,%f,%f,%f,%f\n",
 				position[0], position[1], position[2],
 				angle[0]/3.1415*180, angle[1]/3.1415*180, angle[2]/3.1415*180);
 
