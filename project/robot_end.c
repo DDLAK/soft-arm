@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -30,7 +31,8 @@ void action_paradigm(int paradigm)
 {
 	assert(paradigm <= 4 && paradigm >=0);
 	
-	switch paradigm:
+	switch(paradigm)
+	{
 		case 0:
 			// paradigm 0: LF 0 degree, LB 0 degree
 			ax_turn2angle(MOTOR_LB, 512);
@@ -56,7 +58,7 @@ void action_paradigm(int paradigm)
 			ax_turn2angle(MOTOR_LB, 511+512);
 			ax_turn2angle(MOTOR_LF, 511-103);
 			break;
-			
+	}			
 }
 
 int main()
@@ -141,7 +143,7 @@ int main()
 		}
 		
 		// Is buffer a command?
-		if (buffer[0] != '*' || buffer[recv_len-1] != '.' || recv_len != 6)
+		if (buffer[0] != '*' || buffer[recv_len-1] != '.' || recv_len != 5)
 		{
 			printf("This message is not a command!\n");
 			continue;

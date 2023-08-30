@@ -26,10 +26,14 @@ int main(int argc, char *argv[])
 	// Write instruction to ax12.
 	ax_move_speed(MOTOR_LF, 134);	
 	ax_move_speed(MOTOR_LB, 134);
+	ax_move_speed(MOTOR_RF, 134);	
+	ax_move_speed(MOTOR_RB, 134);	
 
 	// Initial Position
 	ax_turn2angle(MOTOR_LF, 511);
 	ax_turn2angle(MOTOR_LB, 511);
+	ax_turn2angle(MOTOR_RF, 511);
+	ax_turn2angle(MOTOR_RB, 511);
 	getchar();
 
 	// LF 60 degree, LB 60 degree
@@ -55,7 +59,34 @@ int main(int argc, char *argv[])
 	// LF 0 degree, LB 0 degree
 	ax_turn2angle(MOTOR_LB, 511);
 	ax_turn2angle(MOTOR_LF, 511);
-	//getchar();
+	getchar();
+
+	// **************************
+	// RF 60 degree, RB 60 degree
+	ax_turn2angle(MOTOR_RB, 511+205);
+	ax_turn2angle(MOTOR_RF, 511+205);
+	getchar();
+
+	// RF 60 degree, RB -60 degree
+	ax_turn2angle(MOTOR_RB, 511-205);
+	ax_turn2angle(MOTOR_RF, 511+205);
+	getchar();
+
+	// RF 30 degree, RB -150 degree
+	ax_turn2angle(MOTOR_RB, 511-511);
+	ax_turn2angle(MOTOR_RF, 511+103);
+	getchar();
+
+	// RF 75 degree, RB 0 degree
+	ax_turn2angle(MOTOR_RB, 511+0);
+	ax_turn2angle(MOTOR_RF, 511+256);
+	getchar();
+
+	// RF 0 degree, RB 0 degree
+	ax_turn2angle(MOTOR_RB, 511);
+	ax_turn2angle(MOTOR_RF, 511);
+	getchar();
+
 
 	// Close the file.
 	ax12_deinit();
