@@ -5,7 +5,6 @@ import socket
 SERVER_IP = '172.20.10.10'
 SERVER_PORT = 8888
 BUFFER_SIZE = 1024
-MESSAGE = "Hello, World!"
 
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket.connect((SERVER_IP, SERVER_PORT))
