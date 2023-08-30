@@ -1,4 +1,5 @@
 #include "driver_mpu9250_basic.h"
+#include "driver_ax12.h"
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -17,7 +18,14 @@
 #define OFFSET_R_GYROY 0.4252
 #define OFFSET_R_GYROZ -0.5238
 
+#define MOTOR_RB 0x01
+#define MOTOR_RF 0x02
+#define MOTOR_LF 0x03
+#define MOTOR_LB 0x04
+
 #define LOCAL_GRAVITY 9.8118
+
+#define TEST_MOVE 1
 
 int main()
 {
@@ -58,7 +66,11 @@ int main()
 	int times = 6000;
 
 	// Open a csv file to store the data.
-	FILE *csv_fp = fopen("./data/filter.csv","w+");
+#ifdef TEST_MOVE
+	FILE *csv_fp = fopen("./data/mahonyfilter_move.csv","w+");
+#else
+	FILE *csv_fp = fopen("./data/mahonyfilter_stable.csv","w+");
+#endif
 	if (NULL == csv_fp)
 	{
 		perror("Fail to fopen csv_fp");
@@ -68,6 +80,12 @@ int main()
 	// Determinate the format of this csv file.
 	fprintf(csv_fp, "time,an_x,an_y,an_z,wn_x,wn_y,wn_z,"
 			"posi_x,posi_y,posi_z,angle_x,angle_y,angle_z\n");
+
+
+	ax12_init();
+	ax_move_speed(MOTOR_LF, 134);
+	ax_move_speed(MOTOR_LB, 134);
+
 
 	mpu9250_address_t addr;
 
@@ -116,8 +134,16 @@ int main()
 			((tv_e.tv_usec - tv_s.tv_usec) / 1000);
 		interval /= 1000;
 		output_time += interval;
-		gettimeofday(&tv_s, NULL);	
-		
+		gettimeofday(&tv_s, NULL);
+
+#ifdef TEST_MOVE
+		if (output_time > 14.99 && output_time < 15.01)
+		{
+			ax_turn2angle(MOTOR_LB, 511+205);
+			ax_turn2angle(MOTOR_LF, 511-205);
+		}	
+#endif
+
 		// Rectify the value read from mpu9250
 		accel[0] = (accel[0] - (1 + aver[0])) * LOCAL_GRAVITY;
 		accel[1] = (accel[1] - aver[1]) * LOCAL_GRAVITY;
@@ -265,6 +291,7 @@ int main()
 	}	
 	
 	// Deinit and finish.
+	fclose(csv_fp);
 	(void)mpu9250_basic_deinit();
 
 	return 0;

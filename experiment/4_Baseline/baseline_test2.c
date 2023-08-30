@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <assert.h>
 
 #define I2C_FLAG_RIGHT 0
 #define I2C_FLAG_LEFT 1
@@ -20,7 +21,8 @@ void action_paradigm(int paradigm)
 {
 	assert(paradigm <= 4 && paradigm >=0);
 	
-	switch paradigm:
+	switch (paradigm)
+	{
 		case 0:
 			// paradigm 0: LF 0 degree, LB 0 degree
 			ax_turn2angle(MOTOR_LB, 512);
@@ -46,16 +48,16 @@ void action_paradigm(int paradigm)
 			ax_turn2angle(MOTOR_LB, 511+512);
 			ax_turn2angle(MOTOR_LF, 511-103);
 			break;
-			
+	}		
 }
 
 int main()
 {
 	int i;
 	int random[20] = {0, 2, 1, 3, 1,
-					  3, 4, 0, 4, 2,
-					  4, 0, 2, 3, 1,
-					  4, 3, 1, 2, 0} 
+			  3, 4, 0, 4, 2,
+			  4, 0, 2, 3, 1,
+			  4, 3, 1, 2, 0}; 
 
 	ax12_init();
 	
