@@ -23,7 +23,6 @@
 #define MOTOR_LF 0x03
 #define MOTOR_LB 0x04
 
-
 #define LOCAL_GRAVITY 9.8118
 
 #define TEST_MOVE 1
@@ -227,7 +226,7 @@ int main()
 				angle[0]/3.1415*180, angle[1]/3.1415*180, angle[2]/3.1415*180);
 		printf("x = %fm\ty = %fm\tz = %fm\n", position[0], position[1], position[2]);
 
-		fprintf(csv_fp, "%f,%f,%f,%f,%f,%f,%f", output_time,
+		fprintf(csv_fp, "%f,%f,%f,%f,%f,%f,%f,", output_time,
 				a_nn[0], a_nn[1], a_nn[2],
 				w_n[0]/3.1415*180, w_n[1]/3.1415*180, w_n[2]/3.1415*180);
 		fprintf(csv_fp, "%f,%f,%f,%f,%f,%f\n",
