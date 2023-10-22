@@ -161,6 +161,12 @@ sudo python3 raspi-binka.py
 
 ## Experiments
 
+Compile xxx.c by:
+```shell
+gcc -o xxx -O0 -I inc/ src/ -lmath -lbcm2835
+```
+Then execute the output file xxx to see the effect.
+
 ### 1. UART
 
 ### 2. I2C
